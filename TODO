@@ -1,0 +1,16 @@
+* On page with subpages, add subpages to navigation.
+* Breadcrumb navigation when on subpage.
+* Login authentication.
+* HTTP Error Pages
+* Registration form.
+* Article edit form.
+* Article generate form.
+* Theme editing.
+* Scripts editing.
+* Administration dashboard.
+* CSS Minification.
+* JS Minification.
+* Customizable metadata for a page
+* pdfmake integration
+* Updateable dependencies
+* Export project over the top of doccu
