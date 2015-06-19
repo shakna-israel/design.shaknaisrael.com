@@ -4,13 +4,16 @@ except ImportError:
     pass
 import os
 from bottle import route, run, CherryPyServer, template, view, error, redirect, get, static_file, post, request, auth_basic, response, hook
-from lib import get_date, get_portfolio, get_navigation, get_content, send_email
+from lib import get_date, get_portfolio, get_navigation, get_content, send_email, merge_dicts
 import bcrypt
 import pickle
 
 site_name = "jm | Design"
 site_author = "James Milne"
 site_support = "fake@email.address"
+site_host = "192.168.1.2"
+site_port = os.environ.get("PORT", 5000)
+site_globals = {'site_name':site_name,'site_author':site_author,'site_host':site_host,'site_port':site_port,'day':get_date()[0],'day_no':get_date()[1],'month':get_date()[2],'year':get_date()[3]}
 
 @hook('before_request')
 def strip_path():
@@ -20,22 +23,20 @@ def strip_path():
 @view('templates/error')
 def error404(error):
     crash_data = {'requests': request.environ}
+    other_dict = {'title':error}
     send_email(site_support, crash_data)
-    return crash_data
+    return merge_dicts(crash_data, other_dict)
 
 @route('/')
 @view('templates/page')
 def root(title='Home',site_name=site_name,site_author=site_author):
     navigation = get_navigation()[0]
-    day = get_date()[0]
-    day_no = get_date()[1]
-    month = get_date()[2]
-    year = get_date()[3]
     if request.get_cookie("authID") == str(True):
         userStatus = request.get_cookie("authID")
     else:
         userStatus = False
-    return {'title':title,'site_name':site_name,'site_author':site_author,'navigation':navigation,'day':day,'day_no':day_no,'month':month,'year':year, 'user':userStatus}
+    page_dict = {'title':title,'site_name':site_name,'site_author':site_author,'user':userStatus, 'navigation':navigation}
+    return merge_dicts(page_dict, site_globals)
 
 @route('/<title>')
 @view('templates/page')
@@ -45,19 +46,16 @@ def page(title,site_name=site_name,site_author=site_author):
     if title not in navigation:
         if title not in nav_exclude:
             title='Home'
-    day = get_date()[0]
-    day_no = get_date()[1]
-    month = get_date()[2]
-    year = get_date()[3]
     if request.get_cookie("authID") == str(True):
         userStatus = request.get_cookie("authID")
     else:
         userStatus = False
     if title == 'Portfolio':
         portfolio = get_portfolio()
-        return {'title':title,'site_name':site_name,'site_author':site_author,'navigation':navigation,'day':day,'day_no':day_no,'month':month,'year':year,'portfolio':portfolio, 'user':userStatus}
+        page_dict = {'title':title,'navigation':navigation,'portfolio':portfolio, 'user':userStatus}
     else:
-        return {'title':title,'site_name':site_name,'site_author':site_author,'navigation':navigation,'day':day,'day_no':day_no,'month':month,'year':year, 'user':userStatus}
+        page_dict = {'title':title,'navigation':navigation,'user':userStatus}
+        return merge_dicts(page_dict, site_globals)
 
 @route('/<title>/json')
 def return_json(title):
@@ -79,15 +77,12 @@ def get_contact(title='Contact',site_name=site_name,site_author=site_author):
     if title not in navigation:
         if title not in nav_exclude:
             title='Home'
-    day = get_date()[0]
-    day_no = get_date()[1]
-    month = get_date()[2]
-    year = get_date()[3]
     if request.get_cookie("authID") == str(True):
         userStatus = request.get_cookie("authID")
     else:
         userStatus = False
-    return {'title':title,'site_name':site_name,'site_author':site_author,'navigation':navigation,'day':day,'day_no':day_no,'month':month,'year':year, 'user':userStatus}
+    page_dict = {'title':title,'navigation':navigation,'user':userStatus}
+    return merge_dicts(page_dict, site_globals)
 
 @post('/Contact')
 @view('templates/contact_got')
@@ -100,15 +95,12 @@ def submit_contact(title='Contact',site_name=site_name,site_author=site_author):
     if title not in navigation:
         if title not in nav_exclude:
             title='Home'
-    day = get_date()[0]
-    day_no = get_date()[1]
-    month = get_date()[2]
-    year = get_date()[3]
     if request.get_cookie("authID") == str(True):
         userStatus = request.get_cookie("authID")
     else:
         userStatus = False
-    return {'title':title,'site_name':site_name,'site_author':site_author,'navigation':navigation,'day':day,'day_no':day_no,'month':month,'year':year, 'user':userStatus}
+    page_dict = {'title':title,'navigation':navigation,'user':userStatus}
+    return merge_dicts(page_dict, site_globals)
 
 def passwordConfirm(userName, passWord):
     passwordList = pickle.load(open("data.pk", "rb"))
@@ -134,8 +126,7 @@ def login():
 @get('/logout')
 def logout():
     response.set_cookie("authID", str(False))
-    print(request.environ['PATH_INFO'])
-    redirect("http://log:out@192.168.1.2:5000")
+    redirect("http://log:out@" + str(site_host) + ":" + str(site_port))
 
 @get('/register')
 @auth_basic(passwordConfirm)
@@ -154,7 +145,8 @@ def register_get(title='Register User',site_name=site_name,site_author=site_auth
         userStatus = request.get_cookie("authID")
     else:
         userStatus = False
-    return {'title':title,'site_name':site_name,'site_author':site_author,'navigation':navigation,'day':day,'day_no':day_no,'month':month,'year':year, 'user':userStatus}
+    page_dict = {'title':title,'navigation':navigation,'user':userStatus}
+    return merge_dicts(page_dict, site_globals)
 
 @post('/register')
 @auth_basic(passwordConfirm)

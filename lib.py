@@ -98,3 +98,9 @@ def send_email(email, message):
               "text": message,
               "html": message,
               "o:tracking": True})
+
+def merge_dicts(*manydicts):
+    finalDict = {}
+    for dictGiven in manydicts:
+        finalDict.update(dictGiven)
+    return finalDict
