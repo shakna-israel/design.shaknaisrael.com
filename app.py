@@ -155,9 +155,8 @@ def register_get(title='Register User',site_name=site_name,site_author=site_auth
     return merge_dicts(page_dict, site_globals)
 
 @post('/register')
-@view('templates/register_users')
 @auth_basic(passwordConfirm)
-def register_got(title='Register Another User?',site_name=site_name,site_author=site_author):
+def register_got(title='Register User',site_name=site_name,site_author=site_author):
     email = request.forms.get('email')
     passWord = request.forms.get('pass')
     register_user(email, passWord)
