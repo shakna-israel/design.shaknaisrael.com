@@ -134,6 +134,7 @@ def login():
 @get('/logout')
 def logout():
     response.set_cookie("authID", str(False))
+    print(request.environ['PATH_INFO'])
     redirect("http://log:out@192.168.1.2:5000")
 
 @get('/register')
