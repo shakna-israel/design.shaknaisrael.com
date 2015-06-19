@@ -129,7 +129,10 @@ def login():
 @get('/logout')
 def logout():
     response.set_cookie("authID", str(False))
-    redirect("//log:out@" + str(site_host) + ":" + str(site_port))
+    if os.environ['PRODUCTION']:
+        redirect("//log:out@" + str(site_host))
+    else:
+        redirect("//log:out@" + str(site_host) + ":" + str(site_port))
 
 @get('/register')
 @auth_basic(passwordConfirm)
