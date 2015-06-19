@@ -103,7 +103,7 @@ def submit_contact(title='Contact',site_name=site_name,site_author=site_author):
     return {'title':title,'site_name':site_name,'site_author':site_author,'navigation':navigation,'day':day,'day_no':day_no,'month':month,'year':year, 'user':userStatus}
 
 def passwordConfirm(userName, passWord):
-    passwordList = pickle.load(open( "data.pk", "rb"))
+    passwordList = pickle.load(open("data.pk", "rb"))
     passWord = passWord.encode('utf-8')
     hashed = bcrypt.hashpw(passWord, bcrypt.gensalt(12))
     try:
@@ -127,6 +127,39 @@ def login():
 def logout():
     response.set_cookie("authID", str(False))
     redirect("/")
+
+@get('/register')
+@auth_basic(passwordConfirm)
+@view('templates/register_users')
+def register_get(title='Register User',site_name=site_name,site_author=site_author):
+    navigation = get_navigation()[0]
+    nav_exclude = get_navigation()[1]
+    if title not in navigation:
+        if title not in nav_exclude:
+            title='Home'
+    day = get_date()[0]
+    day_no = get_date()[1]
+    month = get_date()[2]
+    year = get_date()[3]
+    if request.get_cookie("authID") == str(True):
+        userStatus = request.get_cookie("authID")
+    else:
+        userStatus = False
+    return {'title':title,'site_name':site_name,'site_author':site_author,'navigation':navigation,'day':day,'day_no':day_no,'month':month,'year':year, 'user':userStatus}
+
+@post('/register')
+@auth_basic(passwordConfirm)
+def register_got(title='Register User',site_name=site_name,site_author=site_author):
+    email = request.forms.get('email')
+    passWord = request.forms.get('pass')
+    register_user(email, passWord)
+
+def register_user(email, passWord):
+    passwordList = pickle.load(open('data.pk', 'rb'))
+    passWord = passWord.encode('utf-8')
+    hashed = bcrypt.hashpw(passWord, bcrypt.gensalt(12))
+    passwordList[email] = hashed
+    pickle.dump(passwordList, open('data.pk','wb'))
 
 @get('/img/<filename:re:.*\.(jpg|png|gif|ico)>')
 def images(filename):

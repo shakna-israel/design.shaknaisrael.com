@@ -2,6 +2,7 @@
 * Breadcrumb navigation when on subpage.
 * HTTP Error Pages
 * Registration form.
+* On Logging in or out, redirect back to last page?
 * Article edit form.
 * Article generate form.
 * Theme editing.
