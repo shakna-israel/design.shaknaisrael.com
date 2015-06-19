@@ -11,5 +11,6 @@
 * JS Minification.
 * Customizable metadata for a page
 * pdfmake integration
-* Updateable dependencies
+* Updateable dependencies from CMS
+* Version Control for articles
 * Export project over the top of doccu
