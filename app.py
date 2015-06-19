@@ -3,12 +3,17 @@ try:
 except ImportError:
     pass
 import os
-from bottle import route, run, CherryPyServer, template, view, error, redirect, get, static_file, post, request, auth_basic, response
+from bottle import route, run, CherryPyServer, template, view, error, redirect, get, static_file, post, request, auth_basic, response, hook
 from lib import get_date, get_portfolio, get_navigation, get_content, send_email
 import bcrypt
+import pickle
 
 site_name = "jm | Design"
 site_author = "James Milne"
+
+@hook('before_request')
+def strip_path():
+    request.environ['PATH_INFO'] = request.environ['PATH_INFO'].rstrip('/')
 
 @route('/')
 @view('templates/page')
@@ -18,14 +23,13 @@ def root(title='Home',site_name=site_name,site_author=site_author):
     day_no = get_date()[1]
     month = get_date()[2]
     year = get_date()[3]
-    if request.get_cookie("authID"):
+    if request.get_cookie("authID") == str(True):
         userStatus = request.get_cookie("authID")
     else:
         userStatus = False
     return {'title':title,'site_name':site_name,'site_author':site_author,'navigation':navigation,'day':day,'day_no':day_no,'month':month,'year':year, 'user':userStatus}
 
 @route('/<title>')
-@route('/<title>/')
 @view('templates/page')
 def page(title,site_name=site_name,site_author=site_author):
     navigation = get_navigation()[0]
@@ -37,7 +41,7 @@ def page(title,site_name=site_name,site_author=site_author):
     day_no = get_date()[1]
     month = get_date()[2]
     year = get_date()[3]
-    if request.get_cookie("authID"):
+    if request.get_cookie("authID") == str(True):
         userStatus = request.get_cookie("authID")
     else:
         userStatus = False
@@ -48,13 +52,12 @@ def page(title,site_name=site_name,site_author=site_author):
         return {'title':title,'site_name':site_name,'site_author':site_author,'navigation':navigation,'day':day,'day_no':day_no,'month':month,'year':year, 'user':userStatus}
 
 @route('/<title>/json')
-@route('/<title>/json/')
 def return_json(title):
     content = get_content(title)
     day_no = get_date()[1]
     month = get_date()[2]
     year = get_date()[3]
-    if request.get_cookie("authID"):
+    if request.get_cookie("authID") == str(True):
         userStatus = request.get_cookie("authID")
     else:
         userStatus = False
@@ -72,7 +75,7 @@ def get_contact(title='Contact',site_name=site_name,site_author=site_author):
     day_no = get_date()[1]
     month = get_date()[2]
     year = get_date()[3]
-    if request.get_cookie("authID"):
+    if request.get_cookie("authID") == str(True):
         userStatus = request.get_cookie("authID")
     else:
         userStatus = False
@@ -93,58 +96,37 @@ def submit_contact(title='Contact',site_name=site_name,site_author=site_author):
     day_no = get_date()[1]
     month = get_date()[2]
     year = get_date()[3]
-    if request.get_cookie("authID"):
+    if request.get_cookie("authID") == str(True):
         userStatus = request.get_cookie("authID")
     else:
         userStatus = False
     return {'title':title,'site_name':site_name,'site_author':site_author,'navigation':navigation,'day':day,'day_no':day_no,'month':month,'year':year, 'user':userStatus}
 
-def check_auth():
-    cookieHandle = request.get_cookie("authID")
-    if cookieHandle is not None:
-        retValue = auth_db(cookieHandle)
-        return retValue
-    else:
+def passwordConfirm(userName, passWord):
+    passwordList = pickle.load(open( "data.pk", "rb"))
+    passWord = passWord.encode('utf-8')
+    hashed = bcrypt.hashpw(passWord, bcrypt.gensalt(12))
+    try:
+        if passwordList[userName]:
+            if bcrypt.hashpw(passWord,passwordList[userName]) == passwordList[userName]:
+                return True
+            else:
+                return False
+        else:
+            return False
+    except KeyError:
         return False
 
-def auth_db(string):
-    dataBase = open('auth.db','r')
-    authorised = False
-    for line in dataBase:
-        if string in line:
-            authorised = True
-    dataBase.close()
-    return authorised
-
-def set_cookie(username, password):
-    password = password.encode('utf-8')
-    hashPass = bcrypt.hashpw(password, bcrypt.gensalt(rounds=12))
-    hashID = bcrypt.hashpw(username, bcrypt.gensalt(rounds=12))
-    response.set_cookie("authID", str(hashID)+str(hashPass))
-
 @get('/login')
-@view('templates/login')
-def login(title='Login',site_name=site_name,site_author=site_author):
-    navigation = get_navigation()[0]
-    day = get_date()[0]
-    day_no = get_date()[1]
-    month = get_date()[2]
-    year = get_date()[3]
-    if request.get_cookie("authID"):
-        userStatus = request.get_cookie("authID")
-    else:
-        userStatus = False
-    return {'title':title,'site_name':site_name,'site_author':site_author,'navigation':navigation,'day':day,'day_no':day_no,'month':month,'year':year, 'user':userStatus}
+@auth_basic(passwordConfirm)
+def login():
+    response.set_cookie("authID", str(True))
+    redirect("/")
 
-@post('/login')
-def login_post(title='Login',site_name=site_name,site_author=site_author):
-    user = request.forms.get('user')
-    auth = request.forms.get('auth')
-    set_cookie(user, auth)
-    if check_auth():
-        return {"logged-in":True}
-    else:
-        return {"logged-in":False}
+@get('/logout')
+def logout():
+    response.set_cookie("authID", str(False))
+    redirect("/")
 
 @get('/img/<filename:re:.*\.(jpg|png|gif|ico)>')
 def images(filename):

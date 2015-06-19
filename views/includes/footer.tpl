@@ -6,9 +6,9 @@
 <footer>
 <p>&copy; {{cur_year}} - {{ site_author }}</p>
 % if user:
-    <p>Logged In</p>
+    <p><a href="/logout">Log Out</a></p>
 % else:
-    <p>Cookies are used for logins.</p>
+    <p><a href="/login">Log In</a></p>
 % end
 <p class="elevator-button">Back to Top</p>
 </footer>
