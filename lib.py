@@ -93,7 +93,7 @@ def send_email(email, message):
         'https://api.mailgun.net/v2/shaknaisrael.com/messages',
         auth=("api", os.environ['MAILGUN_API']),
         data={"from": email,
-              "to": 'contact@shaknaisrael.com',
+              "to": os.environ['CONTACT'],
               "subject": 'jm-design Contact Form Submitted',
               "text": message,
               "html": message,

@@ -10,7 +10,7 @@ import pickle
 
 site_name = "jm | Design"
 site_author = "James Milne"
-site_support = "fake@email.address"
+site_support = os.environ.get("SUPPORT")
 site_host = "192.168.1.2"
 site_port = os.environ.get("PORT", 5000)
 site_globals = {'site_name':site_name,'site_author':site_author,'site_host':site_host,'site_port':site_port,'day':get_date()[0],'day_no':get_date()[1],'month':get_date()[2],'year':get_date()[3]}
@@ -55,7 +55,7 @@ def page(title,site_name=site_name,site_author=site_author):
         page_dict = {'title':title,'navigation':navigation,'portfolio':portfolio, 'user':userStatus}
     else:
         page_dict = {'title':title,'navigation':navigation,'user':userStatus}
-        return merge_dicts(page_dict, site_globals)
+    return merge_dicts(page_dict, site_globals)
 
 @route('/<title>/json')
 def return_json(title):
