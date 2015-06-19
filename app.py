@@ -11,7 +11,10 @@ import pickle
 site_name = "jm | Design"
 site_author = "James Milne"
 site_support = os.environ.get("SUPPORT")
-site_host = "192.168.1.2"
+if os.environ.get("PRODUCTION"):
+    site_host = "jm-design.herokuapp.com"
+else:
+    site_host = "192.168.1.2"
 site_port = os.environ.get("PORT", 5000)
 site_globals = {'site_name':site_name,'site_author':site_author,'site_host':site_host,'site_port':site_port,'day':get_date()[0],'day_no':get_date()[1],'month':get_date()[2],'year':get_date()[3]}
 
@@ -126,7 +129,7 @@ def login():
 @get('/logout')
 def logout():
     response.set_cookie("authID", str(False))
-    redirect("http://log:out@" + str(site_host) + ":" + str(site_port))
+    redirect("//log:out@" + str(site_host) + ":" + str(site_port))
 
 @get('/register')
 @auth_basic(passwordConfirm)
