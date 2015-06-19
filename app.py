@@ -18,8 +18,8 @@ def strip_path():
 
 @error(404)
 @view('templates/error')
-def error404(title='404',site_name=site_name,site_author=site_author):
-    crash_data = {'title':title,'site_name':site_name,'site_author':site_author,'navigation':navigation,'day':day,'day_no':day_no,'month':month,'year':year, 'user':userStatus, 'requests': request.environ}
+def error404(error):
+    crash_data = {'requests': request.environ}
     send_email(site_support, crash_data)
     return crash_data
 
@@ -134,7 +134,7 @@ def login():
 @get('/logout')
 def logout():
     response.set_cookie("authID", str(False))
-    redirect("/")
+    redirect("http://log:out@192.168.1.2:5000")
 
 @get('/register')
 @auth_basic(passwordConfirm)
@@ -174,4 +174,4 @@ def images(filename):
     return static_file(filename, root='views/assets/img')
 
 if __name__ == '__main__':
-    run(server='cherrypy', host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
+    run(debug=True,server='cherrypy', host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
