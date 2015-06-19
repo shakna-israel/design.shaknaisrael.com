@@ -10,10 +10,18 @@ import pickle
 
 site_name = "jm | Design"
 site_author = "James Milne"
+site_support = "fake@email.address"
 
 @hook('before_request')
 def strip_path():
     request.environ['PATH_INFO'] = request.environ['PATH_INFO'].rstrip('/')
+
+@error(404)
+@view('templates/error')
+def error404(title='404',site_name=site_name,site_author=site_author):
+    crash_data = {'title':title,'site_name':site_name,'site_author':site_author,'navigation':navigation,'day':day,'day_no':day_no,'month':month,'year':year, 'user':userStatus, 'requests': request.environ}
+    send_email(site_support, crash_data)
+    return crash_data
 
 @route('/')
 @view('templates/page')
