@@ -3,6 +3,8 @@ import glob
 import os
 import re
 import requests
+import pickle
+import bcrypt
 
 def get_date():
     if datetime.datetime.today().weekday() == 0:
@@ -104,3 +106,18 @@ def merge_dicts(*manydicts):
     for dictGiven in manydicts:
         finalDict.update(dictGiven)
     return finalDict
+
+def password_confirm(userName, passWord):
+    passwordList = pickle.load(open("data.pk", "rb"))
+    passWord = passWord.encode('utf-8')
+    hashed = bcrypt.hashpw(passWord, bcrypt.gensalt(12))
+    try:
+        if passwordList[userName]:
+            if bcrypt.hashpw(passWord,passwordList[userName]) == passwordList[userName]:
+                return True
+            else:
+                return False
+        else:
+            return False
+    except KeyError:
+        return False

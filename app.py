@@ -4,9 +4,7 @@ except ImportError:
     pass
 import os
 from bottle import route, run, CherryPyServer, template, view, error, redirect, get, static_file, post, request, auth_basic, response, hook
-from lib import get_date, get_portfolio, get_navigation, get_content, send_email, merge_dicts
-import bcrypt
-import pickle
+from lib import get_date, get_portfolio, get_navigation, get_content, send_email, merge_dicts, password_confirm
 
 site_name = "jm | Design"
 site_author = "James Milne"
@@ -105,23 +103,8 @@ def submit_contact(title='Contact',site_name=site_name,site_author=site_author):
     page_dict = {'title':title,'navigation':navigation,'user':userStatus}
     return merge_dicts(page_dict, site_globals)
 
-def passwordConfirm(userName, passWord):
-    passwordList = pickle.load(open("data.pk", "rb"))
-    passWord = passWord.encode('utf-8')
-    hashed = bcrypt.hashpw(passWord, bcrypt.gensalt(12))
-    try:
-        if passwordList[userName]:
-            if bcrypt.hashpw(passWord,passwordList[userName]) == passwordList[userName]:
-                return True
-            else:
-                return False
-        else:
-            return False
-    except KeyError:
-        return False
-
 @get('/login')
-@auth_basic(passwordConfirm)
+@auth_basic(password_confirm)
 def login():
     response.set_cookie("authID", str(True))
     redirect("/")
@@ -135,7 +118,7 @@ def logout():
         redirect("//log:out@" + str(site_host) + ":" + str(site_port))
 
 @get('/register')
-@auth_basic(passwordConfirm)
+@auth_basic(password_confirm)
 @view('templates/register_users')
 def register_get(title='Register User',site_name=site_name,site_author=site_author):
     navigation = get_navigation()[0]
@@ -155,7 +138,7 @@ def register_get(title='Register User',site_name=site_name,site_author=site_auth
     return merge_dicts(page_dict, site_globals)
 
 @post('/register')
-@auth_basic(passwordConfirm)
+@auth_basic(password_confirm)
 def register_got(title='Register User',site_name=site_name,site_author=site_author):
     email = request.forms.get('email')
     passWord = request.forms.get('pass')
