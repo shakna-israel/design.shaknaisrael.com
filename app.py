@@ -4,7 +4,7 @@ except ImportError:
     pass
 import os
 from bottle import route, run, CherryPyServer, template, view, error, redirect, get, static_file, post, request, auth_basic, response, hook
-from lib import get_date, get_portfolio, get_navigation, get_content, send_email, merge_dicts, password_confirm
+from lib import get_date, get_portfolio, get_navigation, get_content, send_email, merge_dicts, password_confirm, register_user
 
 site_name = "jm | Design"
 site_author = "James Milne"
@@ -143,13 +143,6 @@ def register_got(title='Register User',site_name=site_name,site_author=site_auth
     email = request.forms.get('email')
     passWord = request.forms.get('pass')
     register_user(email, passWord)
-
-def register_user(email, passWord):
-    passwordList = pickle.load(open('data.pk', 'rb'))
-    passWord = passWord.encode('utf-8')
-    hashed = bcrypt.hashpw(passWord, bcrypt.gensalt(12))
-    passwordList[email] = hashed
-    pickle.dump(passwordList, open('data.pk','wb'))
 
 @get('/img/<filename:re:.*\.(jpg|png|gif|ico)>')
 def images(filename):

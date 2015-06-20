@@ -121,3 +121,10 @@ def password_confirm(userName, passWord):
             return False
     except KeyError:
         return False
+
+def register_user(email, passWord):
+    passwordList = pickle.load(open('data.pk', 'rb'))
+    passWord = passWord.encode('utf-8')
+    hashed = bcrypt.hashpw(passWord, bcrypt.gensalt(12))
+    passwordList[email] = hashed
+    pickle.dump(passwordList, open('data.pk','wb'))
